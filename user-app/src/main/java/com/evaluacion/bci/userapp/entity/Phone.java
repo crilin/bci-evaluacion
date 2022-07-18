@@ -1,7 +1,14 @@
-package com.evaluacion.bci.userapp.jpa;
+package com.evaluacion.bci.userapp.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="Phone")
 public class Phone {
     
+    @Id
     private String number;
     private String citycode;
     private String contrycode;
