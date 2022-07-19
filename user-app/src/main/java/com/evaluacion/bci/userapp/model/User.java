@@ -109,17 +109,23 @@ public class User {
 
     @Override
     public String toString() {
-        return "{" +
+        String msg = "{" +
             " id='" + getId() + "'" +
             ", name='" + getName() + "'" +
             ", email='" + getEmail() + "'" +
             ", password='" + getPassword() + "'" +
-            ", phones='" + getPhones() + "'" +
+            ", phones= ['";
+            for (Phone p: getPhones()){
+                msg = msg.concat(p.toString());
+                msg = msg + ",";
+            }
+            msg = msg.concat("']" +
             ", created='" + getCreated() + "'" +
             ", modified='" + getModified() + "'" +
             ", last_login='" + getLast_login() + "'" +
             ", isactive='" + getIsactive() + "'" +
-            "}";
+            "}");
+        return  msg;
     }
    
 }
