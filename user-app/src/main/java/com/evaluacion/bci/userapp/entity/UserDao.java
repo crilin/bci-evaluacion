@@ -1,43 +1,56 @@
 package com.evaluacion.bci.userapp.entity;
 
-import java.sql.Date;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Date;
+//import java.util.UUID;
+import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.mapping.List;
+import org.hibernate.annotations.GenericGenerator;
 
 
 @Entity
 @Table(name="User")
-public class User {
+public class UserDao {
 
     @Id
-    private String uuid;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private String id;
 
     private String name;
     private String email;
     private String password;
-    private List phones;
+    
+    @OneToMany(targetEntity=PhoneDao.class, mappedBy="user", fetch=FetchType.EAGER)
+    private List<PhoneDao> phones;
+
     private Date created;
     private Date modified;
     private Date last_login;
     private boolean isactive;
 
-    protected User() {
+    protected UserDao() {
         
     }
 
-    public User(String name, String email, String password, List phones){
+    public UserDao(String name, String email, String password){
 
         super();
-        this.uuid = UUID.randomUUID().toString();
+        //this.id = UUID.randomUUID().toString();
         this.name = name;
         this.email = email;
         this.password = password;
-        this.phones = phones;
+        this.phones = new ArrayList<PhoneDao>();
         this.created = new Date(System.currentTimeMillis());
         this.modified = new Date(System.currentTimeMillis());
         this.last_login = new Date(System.currentTimeMillis());
@@ -45,7 +58,7 @@ public class User {
     }
 
     public String getId() {
-        return this.uuid;
+        return this.id;
     }
 
     public String getName() {
@@ -72,11 +85,11 @@ public class User {
         this.password = password;
     }
 
-    public List getphones() {
+    public List<PhoneDao> getPhones() {
         return this.phones;
     }
 
-    public void setphones(List phones) {
+    public void setPhones(List<PhoneDao> phones) {
         this.phones = phones;
     }
 
@@ -112,5 +125,20 @@ public class User {
         this.last_login = last_login;
     }
 
+
+    @Override
+    public String toString() {
+        return "{" +
+            " uuid='" + getId() + "'" +
+            ", name='" + getName() + "'" +
+            ", email='" + getEmail() + "'" +
+            ", password='" + getPassword() + "'" +
+            //", phones='" + getPhones() + "'" +
+            ", created='" + getCreated() + "'" +
+            ", modified='" + getModified() + "'" +
+            ", last_login='" + getLast_login() + "'" +
+            ", isactive='" + Isactive() + "'" +
+            "}";
+    }
 
 }
