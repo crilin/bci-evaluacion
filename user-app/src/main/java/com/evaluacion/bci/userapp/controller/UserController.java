@@ -66,7 +66,7 @@ public class UserController {
             return UserMapping(user);
 
         }catch (Exception efe){
-            throw new ErrorRespuestaHandler("Error al obtener usuario con id: " + id);
+            throw new ErrorRespuestaHandler("Usuario con id: " + id + " no existe");
         }
     }
 
@@ -111,12 +111,18 @@ public class UserController {
         try{
 
             if (uRepo.existsById(id)) {
+                UserDao user = uRepo.getReferenceById(id);
+                for(PhoneDao p: user.getPhones()){
+                    pRepo.deleteById(p.getId());
+                }
+
                 uRepo.deleteById(id);
                 respuesta.setMensaje("Usuario eliminado con exito");
                 return respuesta;
             }
             respuesta.setMensaje("Usuario no existe. id: " + id);
         }catch (Exception e){
+            System.out.println("exception: " + e.getMessage());
             throw new ErrorRespuestaHandler("Error al eliminar usuario con id: " + id);
         }
 
