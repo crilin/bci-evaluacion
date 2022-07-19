@@ -2,13 +2,17 @@ package com.evaluacion.bci.userapp.controller;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,32 +38,64 @@ public class UserController {
 
         System.out.println("User: " + newUser.toString());
         List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
-        //List<Phone> phones = new ArrayList<Phone>();
-        PhoneDao phone;
+
         UserDao user = uRepo.save(new UserDao(newUser.getName(), newUser.getEmail(), newUser.getPassword()));
 
-        for (Phone p: newUser.getPhones()){
-            phone = new PhoneDao(p.getNumber(), p.getCitycode(), p.getCountrycode(),user);
-            System.out.println("Phone: " + phone.toString());
-            phonesDao.add(phone);
-            //phones.add(p);
-  //          pRepo.save(phone);
-        }
+        phonesDao = PhoneDaoMapping(user, newUser.getPhones());
+
         pRepo.saveAll(phonesDao);
-//        user.setPhones(phonesDao);
-        
-        return new User(user.getId(), user.getName(), user.getEmail(), user.getPassword(), newUser.getPhones(), user.getCreated(), user.getModified(), user.getLast_login(), user.Isactive());
+        user.setPhones(phonesDao);
+
+        return UserMapping(user);
     }
 
     @GetMapping("/users/{id}")
     public User RetrieveUser(@PathVariable String id){
-
-        UserDao user = uRepo.getReferenceById(id);
-        //List<PhoneDao> phones = pRepo.findAllByIdUser(id);
-        //user.setPhones(phones);
-
+        UserDao user;
+        try{
+            user = uRepo.getReferenceById(id);
+            
+        }catch (EntityNotFoundException efe){
+            return null;
+        }
+        
         return UserMapping(user);
 
+    }
+
+    @PutMapping("/users/{id}")
+    public User UpdateUser(@PathVariable String id, @RequestBody User user){
+
+        UserDao userDao;
+        List<PhoneDao> phonesDao;
+
+        if(uRepo.existsById(id))
+        {
+            try{
+                userDao = uRepo.getReferenceById(id);
+                //phonesDao = userDao.getPhones();
+
+                phonesDao = PhoneDaoMapping(userDao, user.getPhones());
+                // Actualiza los datos de User
+                userDao.setName(user.getName());
+                userDao.setEmail(user.getEmail());
+                userDao.setPassword(user.getPassword());
+                userDao.setPhones(phonesDao);
+                userDao.setModified(new Date(System.currentTimeMillis()));
+                userDao.setIsactive(user.getIsactive());
+
+                pRepo.saveAll(phonesDao);
+                uRepo.save(userDao);
+//                
+
+            }catch (EntityNotFoundException efe){
+                return null;
+            }
+
+            return UserMapping(userDao);
+        }
+        
+        return null;
     }
 
     /**
@@ -82,7 +118,7 @@ public class UserController {
         List<Phone> phones = new ArrayList<Phone>();
 
         for(PhoneDao p: phonesDao){
-            phone = new Phone(p.getNumber(), p.getCitycode(), p.getCountrycode());
+            phone = new Phone(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode());
             phones.add(phone);
         }
 
@@ -109,7 +145,8 @@ public class UserController {
         List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
 
         for(Phone p: phones){
-            phone = new PhoneDao(p.getNumber(), p.getCitycode(), p.getCountrycode(), user);
+            phone = new PhoneDao(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode(), user);
+            System.out.println("TELEFONO: " + phone.toString());
             phonesDao.add(phone);
         }
 

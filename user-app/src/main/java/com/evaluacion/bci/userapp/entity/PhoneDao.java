@@ -29,14 +29,19 @@ public class PhoneDao {
         
     }
 
-    public PhoneDao(String number, String citycode, String countrycode, UserDao user){
+    public PhoneDao(Long id, String number, String citycode, String countrycode, UserDao user){
 
         super();
+        this.id = id;
         this.number = number;
         this.citycode = citycode;
         this.countrycode = countrycode;
         this.user = user;
     }  
+
+    public Long getId() {
+        return this.id;
+    }
 
     public String getNumber() {
         return this.number;
@@ -74,6 +79,7 @@ public class PhoneDao {
     @Override
     public String toString() {
         return "{" +
+            " id='" + getId() + "'" +
             " number='" + getNumber() + "'" +
             ", citycode='" + getCitycode() + "'" +
             ", countrycode='" + getCountrycode() + "'" +

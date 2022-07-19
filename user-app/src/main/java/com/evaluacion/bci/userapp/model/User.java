@@ -98,7 +98,7 @@ public class User {
         this.last_login = last_login;
     }
 
-    public boolean Isactive() {
+    public boolean getIsactive() {
         return this.isactive;
     }
 
@@ -118,7 +118,7 @@ public class User {
             ", created='" + getCreated() + "'" +
             ", modified='" + getModified() + "'" +
             ", last_login='" + getLast_login() + "'" +
-            ", isactive='" + Isactive() + "'" +
+            ", isactive='" + getIsactive() + "'" +
             "}";
     }
    

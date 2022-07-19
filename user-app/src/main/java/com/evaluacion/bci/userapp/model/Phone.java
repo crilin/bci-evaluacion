@@ -1,7 +1,8 @@
 package com.evaluacion.bci.userapp.model;
 
 public class Phone {
-    
+
+    private Long id;
     private String number;
     private String citycode;
     private String countrycode;
@@ -10,11 +11,20 @@ public class Phone {
 
     }
 
-    public Phone(String number, String citycode, String countrycode){
+    public Phone(Long id, String number, String citycode, String countrycode){
         super();
+        this.id = id;
         this.number = number;
         this.citycode = citycode;
         this.countrycode = countrycode;
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNumber() {
@@ -39,6 +49,17 @@ public class Phone {
 
     public void setCountrycode(String countrycode) {
         this.countrycode = countrycode;
+    }
+
+
+    @Override
+    public String toString() {
+        return "{" +
+            " id='" + getId() + "'" +
+            ", number='" + getNumber() + "'" +
+            ", citycode='" + getCitycode() + "'" +
+            ", countrycode='" + getCountrycode() + "'" +
+            "}";
     }
 
 }
