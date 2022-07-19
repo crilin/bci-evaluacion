@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -102,6 +103,26 @@ public class UserController {
         }
         throw new ErrorRespuestaHandler("Usuario con id:" + id + " no existe");
     }
+
+    @DeleteMapping("/users/{id}")
+    public ErrorRespuesta DeleteUser(@PathVariable String id) throws ErrorRespuestaHandler{
+        ErrorRespuesta respuesta = new ErrorRespuesta();
+        
+        try{
+
+            if (uRepo.existsById(id)) {
+                uRepo.deleteById(id);
+                respuesta.setMensaje("Usuario eliminado con exito");
+                return respuesta;
+            }
+            respuesta.setMensaje("Usuario no existe. id: " + id);
+        }catch (Exception e){
+            throw new ErrorRespuestaHandler("Error al eliminar usuario con id: " + id);
+        }
+
+        return respuesta;
+    }
+    
 
     /**
      * Return the mapping from Object UserDao to User
