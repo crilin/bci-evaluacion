@@ -3,8 +3,13 @@ Microservicio para gestión de Usuarios. Dicho microservicio expone diferentes e
 para gestionar la creación, modificación, consulta y borrado de usuarios.
 
 # Ejecución del Microservicio
-Para levantar el Microservicio es necesario ejecutar la clase "UserAppApplication" del proyecto, se recomienda utilizar un IDE.
-Una vez que la aplicación se este ejecutando, invocar los endpoints disponible utilizando la herramienta POSTMAN.
+Para levantar el Microservicio es necesario ejecutar la clase "UserAppApplication.java" del proyecto, se recomienda utilizar un IDE.
+Una vez que la aplicación se este ejecutando, se accede desde la url http://localhost:8080/swagger-ui/index.html
+
+# ACCESO A BD H2
+Para el acceso a la BD ingresar a la url: http://localhost:8080/h2-console/
+ - User Name: sa
+ - Password: (vacio)
 
 # ENDPOINTS
 1. Creación:
