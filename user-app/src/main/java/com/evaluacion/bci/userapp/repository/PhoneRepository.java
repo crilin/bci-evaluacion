@@ -1,4 +1,4 @@
-package com.evaluacion.bci.userapp.service;
+package com.evaluacion.bci.userapp.repository;
 
 
 import java.util.List;

@@ -11,6 +11,8 @@ import com.evaluacion.bci.userapp.entity.PhoneDao;
 import com.evaluacion.bci.userapp.entity.UserDao;
 import com.evaluacion.bci.userapp.model.Phone;
 import com.evaluacion.bci.userapp.model.User;
+import com.evaluacion.bci.userapp.repository.PhoneRepository;
+import com.evaluacion.bci.userapp.repository.UserRepository;
 
 @Component
 public class UserService {
