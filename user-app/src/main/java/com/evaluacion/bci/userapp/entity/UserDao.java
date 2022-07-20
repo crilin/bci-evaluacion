@@ -30,6 +30,7 @@ public class UserDao {
     private String name;
     private String email;
     private String password;
+    private String token;
     
     @OneToMany(targetEntity=PhoneDao.class, mappedBy="user", fetch=FetchType.EAGER)
     private List<PhoneDao> phones;
@@ -43,13 +44,14 @@ public class UserDao {
         
     }
 
-    public UserDao(String name, String email, String password){
+    public UserDao(String name, String email, String password, String token){
 
         super();
         //this.id = UUID.randomUUID().toString();
         this.name = name;
         this.email = email;
         this.password = password;
+        this.token = token;
         this.phones = new ArrayList<PhoneDao>();
         this.created = new Date(System.currentTimeMillis());
         this.modified = new Date(System.currentTimeMillis());
@@ -84,6 +86,26 @@ public class UserDao {
     public void setPassword(String password) {
         this.password = password;
     }
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getToken() {
+        return this.token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public boolean isIsactive() {
+        return this.isactive;
+    }
+
+    public boolean getIsactive() {
+        return this.isactive;
+    }
+
 
     public List<PhoneDao> getPhones() {
         return this.phones;

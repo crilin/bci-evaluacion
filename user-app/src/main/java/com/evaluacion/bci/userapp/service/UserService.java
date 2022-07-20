@@ -24,9 +24,9 @@ public class UserService {
     
     List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
 
-    public User addUser(User newUser){
+    public User addUser(User newUser, String token){
         try {
-            user = uRepo.save(new UserDao(newUser.getName(), newUser.getEmail(), newUser.getPassword()));
+            user = uRepo.save(new UserDao(newUser.getName(), newUser.getEmail(), newUser.getPassword(), token));
 
             phonesDao = PhoneDaoMapping(user, newUser.getPhones());
     
@@ -36,6 +36,16 @@ public class UserService {
             return UserMapping(user);
 
         } catch (Exception ie){
+            return null;
+        }
+    }
+
+    public UserDao getUserDetails(String name, String password){
+
+        try {
+            user = uRepo.getReferenceByNameAndPass(name, password);
+            return user;
+        } catch (Exception e) {
             return null;
         }
     }

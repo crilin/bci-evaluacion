@@ -11,4 +11,5 @@ public interface UserRepository extends JpaRepository<UserDao, String>{
 
        SELECT * FROM "USER"
      */
+    UserDao getReferenceByNameAndPass(String name, String password);
 }
