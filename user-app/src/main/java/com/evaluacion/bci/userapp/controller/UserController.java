@@ -1,11 +1,10 @@
 package com.evaluacion.bci.userapp.controller;
 
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,178 +16,125 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.evaluacion.bci.userapp.entity.PhoneDao;
-import com.evaluacion.bci.userapp.entity.UserDao;
 import com.evaluacion.bci.userapp.exception.ErrorRespuestaHandler;
 import com.evaluacion.bci.userapp.model.ErrorRespuesta;
-import com.evaluacion.bci.userapp.model.Phone;
 import com.evaluacion.bci.userapp.model.User;
-import com.evaluacion.bci.userapp.service.PhoneRepository;
-import com.evaluacion.bci.userapp.service.UserRepository;
+import com.evaluacion.bci.userapp.service.UserService;
 
 @RestController
 public class UserController {
 
     @Autowired
-    private UserRepository uRepo;
-
-    @Autowired
-    private PhoneRepository pRepo;
+    private UserService userService;
     
+    @Value("${pass.patron}")
+    String passPattern;
+
+    @Value("${email.patron}")
+    String emailPattern;
+
+
     @PostMapping("/users")
-    public User addUser(@RequestBody User newUser) throws ErrorRespuestaHandler{
+    public ResponseEntity<User> addUser(@RequestBody User newUser) throws ErrorRespuestaHandler{
 
-        System.out.println("User: " + newUser.toString());
-        UserDao user;
-        List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
+        ResponseEntity<User> response;
 
-        try {
-            user = uRepo.save(new UserDao(newUser.getName(), newUser.getEmail(), newUser.getPassword()));
-
-            phonesDao = PhoneDaoMapping(user, newUser.getPhones());
-    
-            pRepo.saveAll(phonesDao);
-            user.setPhones(phonesDao);
-            
-        } catch (Exception ie){
-            throw new ErrorRespuestaHandler("Error al guardar usuario");
+        if (newUser == null){
+            throw new ErrorRespuestaHandler("No hay contenido en la solicitud", HttpStatus.NO_CONTENT.value());
         }
-        
-        return UserMapping(user);
+
+        if (!isEmailValid(newUser.getEmail())){
+            throw new ErrorRespuestaHandler("Correo no cumple con formato", HttpStatus.NOT_ACCEPTABLE.value());
+        }
+
+        if (!isPasswordValid(newUser.getPassword())){
+            throw new ErrorRespuestaHandler("Password no cumple con formato establecido", HttpStatus.NOT_ACCEPTABLE.value());
+        }
+        newUser = userService.addUser(newUser);
+        if (newUser !=null){
+
+            response = new ResponseEntity<User>(newUser, HttpStatus.OK);
+        }
+        else {
+            throw new ErrorRespuestaHandler("Error al crear usuario", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return response;
     }
 
     @GetMapping("/users/{id}")
-    public User RetrieveUser(@PathVariable String id) throws ErrorRespuestaHandler{
-        UserDao user;
-        try{
-
-            user = uRepo.getReferenceById(id);
-            return UserMapping(user);
-
-        }catch (Exception efe){
-            throw new ErrorRespuestaHandler("Usuario con id: " + id + " no existe");
+    public ResponseEntity<User> RetrieveUser(@PathVariable String id) throws ErrorRespuestaHandler{
+        
+        ResponseEntity<User> response;
+        if (id==null){
+            throw new ErrorRespuestaHandler("Error en Metodo GET", HttpStatus.METHOD_NOT_ALLOWED.value());
+        }
+        User user = userService.RetrieveUser(id);
+        if(user != null){
+            response = new ResponseEntity<User>(user, HttpStatus.OK);
+            return response;
+        }else{
+            throw new ErrorRespuestaHandler("Usuario no existe", HttpStatus.BAD_REQUEST.value());
         }
     }
 
     @PutMapping("/users/{id}")
-    public User UpdateUser(@PathVariable String id, @RequestBody User user) throws ErrorRespuestaHandler{
+    public ResponseEntity<User> UpdateUser(@PathVariable String id, @RequestBody User user) throws ErrorRespuestaHandler{
 
-        UserDao userDao;
-        List<PhoneDao> phonesDao;
+        ResponseEntity<User> response;
 
-        if(uRepo.existsById(id))
-        {
-            try{
-                userDao = uRepo.getReferenceById(id);
-                //phonesDao = userDao.getPhones();
-
-                phonesDao = PhoneDaoMapping(userDao, user.getPhones());
-                // Actualiza los datos de User
-                userDao.setName(user.getName());
-                userDao.setEmail(user.getEmail());
-                userDao.setPassword(user.getPassword());
-                userDao.setPhones(phonesDao);
-                userDao.setModified(new Date(System.currentTimeMillis()));
-                userDao.setIsactive(user.getIsactive());
-
-                pRepo.saveAll(phonesDao);
-                uRepo.save(userDao);
-//                
-
-            }catch (Exception efe){
-                throw new ErrorRespuestaHandler("Error al actualizar usuario con id: " + id);
-            }
-
-            return UserMapping(userDao);
+        user = userService.UpdateUser(id, user);
+        if (user != null){
+            response = new ResponseEntity<User>(user, HttpStatus.OK);
+            return response;
+        }else{
+            throw new ErrorRespuestaHandler("Error al actualizar usuario con id: " + id, HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-        throw new ErrorRespuestaHandler("Usuario con id:" + id + " no existe");
     }
 
     @DeleteMapping("/users/{id}")
     public ErrorRespuesta DeleteUser(@PathVariable String id) throws ErrorRespuestaHandler{
         ErrorRespuesta respuesta = new ErrorRespuesta();
         
-        try{
-
-            if (uRepo.existsById(id)) {
-                UserDao user = uRepo.getReferenceById(id);
-                for(PhoneDao p: user.getPhones()){
-                    pRepo.deleteById(p.getId());
-                }
-
-                uRepo.deleteById(id);
-                respuesta.setMensaje("Usuario eliminado con exito");
-                return respuesta;
-            }
-            respuesta.setMensaje("Usuario no existe. id: " + id);
-        }catch (Exception e){
-            System.out.println("exception: " + e.getMessage());
-            throw new ErrorRespuestaHandler("Error al eliminar usuario con id: " + id);
+        if (userService.DeleteUser(id)){
+            respuesta.setCodigo(HttpStatus.OK.value());
+            respuesta.setMensaje("Usuario eliminado");
+        }else{
+            throw new ErrorRespuestaHandler("Error al eliminar usuario con id: " + id, HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
 
         return respuesta;
     }
     
-
     /**
-     * Return the mapping from Object UserDao to User
-     * @param UserDao must not be {@literal null}.
-	 * @return a User Object
-     * */
-    private User UserMapping(UserDao userDao){
-
-        return new User(userDao.getId(), userDao.getName(), userDao.getEmail(), userDao.getPassword(), PhoneMapping(userDao.getPhones()), userDao.getCreated(), userDao.getModified(), userDao.getLast_login(), userDao.Isactive());
+    * Check password with Regular exp pass.patron
+    * @param String password must not be {@literal null}.
+    * @return boolean
+    */
+    public boolean isPasswordValid(String password) {
+        System.out.println("passPattern: " + passPattern);
+        return password.matches(passPattern);
     }
 
     /**
-     * Return the mapping from Object PhoneDao to Phone
-     * @param List<PhoneDao> must not be {@literal null}.
-	 * @return a List of Phone Objects
-     * */
-    private List<Phone> PhoneMapping(List<PhoneDao> phonesDao){
-        Phone phone;
-        List<Phone> phones = new ArrayList<Phone>();
+    * Valida si email cumple con formato aaaaaaaa@dominio.cl
+    * @param String must not be {@literal null}.
+    * @return boolean
+    */
+    public boolean isEmailValid(String email) {
+        System.out.println("emailPattern: " + emailPattern);
 
-        for(PhoneDao p: phonesDao){
-            phone = new Phone(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode());
-            phones.add(phone);
-        }
-
-        return phones;
-    }
-
-    /**
-     * Return the mapping from Object UserDao to User
-     * @param User must not be {@literal null}.
-	 * @return a UserDao Object
-     * */
-    private UserDao UserDaoMapping(User user){
- 
-        return uRepo.getReferenceById(user.getId());
-    }
-
-    /**
-     * Return the mapping from Object PhoneDao to Phone
-     * @param List<PhoneDao> must not be {@literal null}.
-	 * @return a List of Phone Objects
-     * */
-    private List<PhoneDao> PhoneDaoMapping(UserDao user, List<Phone> phones){
-        PhoneDao phone;
-        List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
-
-        for(Phone p: phones){
-            phone = new PhoneDao(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode(), user);
-            System.out.println("TELEFONO: " + phone.toString());
-            phonesDao.add(phone);
-        }
-
-        return phonesDao;
+        Pattern pattern = Pattern.compile(emailPattern);
+		Matcher matcher = pattern.matcher(email);
+		return matcher.matches();
+        
+        //return email.matches(emailPattern);
     }
 
     @ExceptionHandler(ErrorRespuestaHandler.class)
-    public ResponseEntity<ErrorRespuesta> exceptionHandler(Exception ex) {
+    public ResponseEntity<ErrorRespuesta> exceptionHandler(ErrorRespuestaHandler ex) {
         ErrorRespuesta error = new ErrorRespuesta();
-        error.setMensaje(ex.getMessage());
+        error.setCodigo(ex.getCodigo());
+        error.setMensaje(ex.getMensaje());
         return new ResponseEntity<ErrorRespuesta>(error, HttpStatus.OK);
     }
 }
