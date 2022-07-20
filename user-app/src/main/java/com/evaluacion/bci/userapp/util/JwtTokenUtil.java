@@ -1,4 +1,4 @@
-package com.evaluacion.bci.userapp.config;
+package com.evaluacion.bci.userapp.util;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.evaluacion.bci.userapp.entity.UserDao;
@@ -54,7 +53,7 @@ public class JwtTokenUtil implements Serializable {
 	//generate token for user
 	public String generateToken(UserDao userDetails) {
 		Map<String, Object> claims = new HashMap<>();
-		return doGenerateToken(claims, userDetails.getName());
+		return doGenerateToken(claims, userDetails.getId());
 	}
 
 	//while creating the token -
@@ -70,8 +69,8 @@ public class JwtTokenUtil implements Serializable {
 	}
 
 	//validate token
-	public Boolean validateToken(String token, UserDetails userDetails) {
-		final String username = getUsernameFromToken(token);
-		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+	public Boolean validateToken(String token, UserDao userDetails) {
+		final String userId = getUsernameFromToken(token);
+		return (userId.equals(userDetails.getId()) && !isTokenExpired(token));
 	}
 }

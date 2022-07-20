@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.evaluacion.bci.userapp.config.JwtTokenUtil;
 import com.evaluacion.bci.userapp.entity.UserDao;
 import com.evaluacion.bci.userapp.model.JwtRequest;
 import com.evaluacion.bci.userapp.model.JwtResponse;
-import com.evaluacion.bci.userapp.service.JwtUserDetailsService;
+import com.evaluacion.bci.userapp.service.UserService;
+import com.evaluacion.bci.userapp.util.JwtTokenUtil;
 
 @RestController
 @CrossOrigin
@@ -29,15 +29,15 @@ public class JwtAuthenticationController {
 	private JwtTokenUtil jwtTokenUtil;
 
 	@Autowired
-	private JwtUserDetailsService userDetailsService;
+	UserService userService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
 
 		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
-		final UserDao userDetails = userDetailsService
-				.loadUserByUsername(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+		final UserDao userDetails = userService
+				.loadUserByUserAndPass(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
 		final String token = jwtTokenUtil.generateToken(userDetails);
 

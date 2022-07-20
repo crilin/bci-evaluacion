@@ -5,14 +5,16 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.evaluacion.bci.userapp.entity.PhoneDao;
 import com.evaluacion.bci.userapp.entity.UserDao;
-import com.evaluacion.bci.userapp.model.Phone;
+import com.evaluacion.bci.userapp.exception.ErrorRespuestaHandler;
 import com.evaluacion.bci.userapp.model.User;
 import com.evaluacion.bci.userapp.repository.PhoneRepository;
 import com.evaluacion.bci.userapp.repository.UserRepository;
+import com.evaluacion.bci.userapp.util.UserUtil;
 
 @Component
 public class UserService {
@@ -22,48 +24,79 @@ public class UserService {
     @Autowired
     private PhoneRepository pRepo;
 
+    @Autowired
+    private UserUtil userUtil;
+    
     UserDao user;
     
     List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
 
-    public User addUser(User newUser, String token){
+    public User addUser(User newUser, String token) throws ErrorRespuestaHandler{
+
+        if (newUser == null){
+            throw new ErrorRespuestaHandler("No hay contenido en la solicitud", HttpStatus.NO_CONTENT.value());
+        }
+
+        if (!userUtil.isEmailValid(newUser.getEmail())){
+            throw new ErrorRespuestaHandler("Correo no cumple con formato", HttpStatus.NOT_ACCEPTABLE.value());
+        }
+
+        if (!userUtil.isPasswordValid(newUser.getPassword())){
+            throw new ErrorRespuestaHandler("Password no cumple con formato establecido", HttpStatus.NOT_ACCEPTABLE.value());
+        }
+
         try {
             user = uRepo.save(new UserDao(newUser.getName(), newUser.getEmail(), newUser.getPassword(), token));
 
-            phonesDao = PhoneDaoMapping(user, newUser.getPhones());
+            phonesDao = userUtil.PhoneDaoMapping(user, newUser.getPhones());
     
             pRepo.saveAll(phonesDao);
             user.setPhones(phonesDao);
 
-            return UserMapping(user);
+            return userUtil.UserMapping(user);
 
         } catch (Exception ie){
-            return null;
+            throw new ErrorRespuestaHandler("Error al crear usuario " + ie.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
 
-    public UserDao getUserDetails(String name, String password){
+    public UserDao getUserDetails(String id){
 
         try {
-            user = uRepo.getReferenceByNameAndPass(name, password);
+            user = uRepo.getReferenceById(id);
             return user;
         } catch (Exception e) {
             return null;
         }
     }
 
-    public User RetrieveUser(String id){
+    public UserDao loadUserByUserAndPass(String name, String password) throws ErrorRespuestaHandler{
+
+        try {
+            user = uRepo.getReferenceByNameAndPassword(name, password);
+            return user;
+        } catch (Exception e) {
+            throw new ErrorRespuestaHandler("Error en credenciales", HttpStatus.FORBIDDEN.value());
+        }
+    }
+
+    public User RetrieveUser(String id) throws ErrorRespuestaHandler{
+        
+        if (id==null){
+            throw new ErrorRespuestaHandler("Error en Metodo GET", HttpStatus.METHOD_NOT_ALLOWED.value());
+        }
+        
         try{
 
             user = uRepo.getReferenceById(id);
-            return UserMapping(user);
+            return userUtil.UserMapping(user);
 
         }catch (Exception e){
-            return null;
+            throw new ErrorRespuestaHandler("Error al obtener usuario" + e.getMessage(), HttpStatus.BAD_REQUEST.value());
         }
     }
     
-    public User UpdateUser(String id, User user){
+    public User UpdateUser(String id, User user) throws ErrorRespuestaHandler{
         
         UserDao userDao;
         List<PhoneDao> phonesDao;
@@ -74,7 +107,7 @@ public class UserService {
                 userDao = uRepo.getReferenceById(id);
                 //phonesDao = userDao.getPhones();
 
-                phonesDao = PhoneDaoMapping(userDao, user.getPhones());
+                phonesDao = userUtil.PhoneDaoMapping(userDao, user.getPhones());
                 // Actualiza los datos de User
                 userDao.setName(user.getName());
                 userDao.setEmail(user.getEmail());
@@ -86,17 +119,17 @@ public class UserService {
                 pRepo.saveAll(phonesDao);
                 uRepo.save(userDao);
 
-                return UserMapping(userDao);  
+                return userUtil.UserMapping(userDao);  
 
             }catch (Exception e){
-                return null;
+                throw new ErrorRespuestaHandler("Error al actualizar usuario " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
             
         }
-        return null;
+        throw new ErrorRespuestaHandler("Error al obtener usuario con id: " + id, HttpStatus.BAD_REQUEST.value());
     }
 
-    public boolean DeleteUser(String id){
+    public boolean DeleteUser(String id) throws ErrorRespuestaHandler{
         try{
 
             if (uRepo.existsById(id)) {
@@ -106,57 +139,13 @@ public class UserService {
 
                 uRepo.save(user);
                 return true;
+            } else {
+
+                throw new ErrorRespuestaHandler("Usuario no existe", HttpStatus.BAD_REQUEST.value());
             }
-            return false;
         }catch (Exception e){
-            return false;
+            throw new ErrorRespuestaHandler("Error al eliminar usuario " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
-    /**
-     * Return the mapping from Object PhoneDao to Phone
-     * @param UserDao must not be {@literal null}.
-     * @param List<PhoneDao> must not be {@literal null}.
-	 * @return a List of Phone Objects
-     * */
-    private List<PhoneDao> PhoneDaoMapping(UserDao user, List<Phone> phones){
-        PhoneDao phone;
-        List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
 
-        for(Phone p: phones){
-            phone = new PhoneDao(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode(), user);
-            System.out.println("TELEFONO: " + phone.toString());
-            phonesDao.add(phone);
-        }
-
-        return phonesDao;
-    }
-
-    /**
-     * Return the mapping from Object PhoneDao to Phone
-     * @param List<PhoneDao> must not be {@literal null}.
-	 * @return a List of Phone Objects
-     * */
-    private List<Phone> PhoneMapping(List<PhoneDao> phonesDao){
-        Phone phone;
-        List<Phone> phones = new ArrayList<Phone>();
-
-        for(PhoneDao p: phonesDao){
-            phone = new Phone(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode());
-            phones.add(phone);
-        }
-
-        return phones;
-    }
-
-    /**
-     * Return the mapping from Object UserDao to User
-     * @param UserDao must not be {@literal null}.
-	 * @return a User Object
-     * */
-    private User UserMapping(UserDao userDao){
-
-        return new User(userDao.getId(), userDao.getName(), userDao.getEmail(), userDao.getPassword(), PhoneMapping(userDao.getPhones()), userDao.getCreated(), userDao.getModified(), userDao.getLast_login(), userDao.Isactive());
-    }
-
- 
 }
