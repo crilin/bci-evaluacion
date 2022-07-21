@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 import com.evaluacion.bci.userapp.entity.PhoneDao;
 import com.evaluacion.bci.userapp.entity.UserDao;
-import com.evaluacion.bci.userapp.model.Phone;
-import com.evaluacion.bci.userapp.model.User;
+import com.evaluacion.bci.userapp.model.PhoneDTO;
+import com.evaluacion.bci.userapp.model.UserRespuestaDTO;
 
 @Component
 public class UserUtil {
@@ -28,13 +28,13 @@ public class UserUtil {
      * @param List<PhoneDao> must not be {@literal null}.
 	 * @return a List of Phone Objects
      * */
-    public List<PhoneDao> PhoneDaoMapping(UserDao user, List<Phone> phones){
+    public List<PhoneDao> PhoneDaoMapping(UserDao user, List<PhoneDTO> phones){
         PhoneDao phone;
         List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
 
-        for(Phone p: phones){
+        for(PhoneDTO p: phones){
             phone = new PhoneDao(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode(), user);
-            System.out.println("TELEFONO: " + phone.toString());
+            //System.out.println("TELEFONO: " + phone.toString());
             phonesDao.add(phone);
         }
 
@@ -46,12 +46,12 @@ public class UserUtil {
      * @param List<PhoneDao> must not be {@literal null}.
 	 * @return a List of Phone Objects
      * */
-    public List<Phone> PhoneMapping(List<PhoneDao> phonesDao){
-        Phone phone;
-        List<Phone> phones = new ArrayList<Phone>();
+    public List<PhoneDTO> PhoneMapping(List<PhoneDao> phonesDao){
+        PhoneDTO phone;
+        List<PhoneDTO> phones = new ArrayList<PhoneDTO>();
 
         for(PhoneDao p: phonesDao){
-            phone = new Phone(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode());
+            phone = new PhoneDTO(p.getId(), p.getNumber(), p.getCitycode(), p.getCountrycode());
             phones.add(phone);
         }
 
@@ -63,9 +63,9 @@ public class UserUtil {
      * @param UserDao must not be {@literal null}.
 	 * @return a User Object
      * */
-    public User UserMapping(UserDao userDao){
+    public UserRespuestaDTO UserMapping(UserDao userDao){
 
-        return new User(userDao.getId(), userDao.getName(), userDao.getEmail(), userDao.getPassword(), PhoneMapping(userDao.getPhones()), userDao.getCreated(), userDao.getModified(), userDao.getLast_login(), userDao.Isactive());
+        return new UserRespuestaDTO(userDao.getId(), userDao.getName(), userDao.getEmail(), userDao.getPassword(), PhoneMapping(userDao.getPhones()), userDao.getCreated(), userDao.getModified(), userDao.getLast_login(), userDao.Isactive());
     }
 
  
@@ -75,7 +75,7 @@ public class UserUtil {
     * @return boolean
     */
     public boolean isPasswordValid(String password) {
-        System.out.println("passPattern: " + passPattern);
+        //System.out.println("passPattern: " + passPattern);
         return password.matches(passPattern);
     }
 
@@ -85,7 +85,7 @@ public class UserUtil {
     * @return boolean
     */
     public boolean isEmailValid(String email) {
-        System.out.println("emailPattern: " + emailPattern);
+        //System.out.println("emailPattern: " + emailPattern);
 
         Pattern pattern = Pattern.compile(emailPattern);
 		Matcher matcher = pattern.matcher(email);

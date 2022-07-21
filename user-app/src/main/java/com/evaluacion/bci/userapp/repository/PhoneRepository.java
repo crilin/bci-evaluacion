@@ -11,4 +11,6 @@ import com.evaluacion.bci.userapp.entity.UserDao;
 public interface PhoneRepository extends JpaRepository<PhoneDao, Long> {
     
     List<PhoneDao> findAllByUser (UserDao user);
+
+    void deleteAllByUser(UserDao idUser);
 }

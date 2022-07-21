@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 import com.evaluacion.bci.userapp.entity.PhoneDao;
 import com.evaluacion.bci.userapp.entity.UserDao;
 import com.evaluacion.bci.userapp.exception.ErrorRespuestaHandler;
-import com.evaluacion.bci.userapp.model.User;
+import com.evaluacion.bci.userapp.model.UserDTO;
+import com.evaluacion.bci.userapp.model.UserRespuestaDTO;
 import com.evaluacion.bci.userapp.repository.PhoneRepository;
 import com.evaluacion.bci.userapp.repository.UserRepository;
 import com.evaluacion.bci.userapp.util.UserUtil;
@@ -31,10 +32,14 @@ public class UserService {
     
     List<PhoneDao> phonesDao = new ArrayList<PhoneDao>();
 
-    public User addUser(User newUser, String token) throws ErrorRespuestaHandler{
+    public UserRespuestaDTO addUser(UserDTO newUser, String token) throws ErrorRespuestaHandler{
 
         if (newUser == null){
             throw new ErrorRespuestaHandler("No hay contenido en la solicitud", HttpStatus.NO_CONTENT.value());
+        }
+
+        if (uRepo.existsByEmail(newUser.getEmail())){
+            throw new ErrorRespuestaHandler("Correo ya se encuentra registrado", HttpStatus.NOT_ACCEPTABLE.value());
         }
 
         if (!userUtil.isEmailValid(newUser.getEmail())){
@@ -80,7 +85,7 @@ public class UserService {
         }
     }
 
-    public User RetrieveUser(String id) throws ErrorRespuestaHandler{
+    public UserRespuestaDTO RetrieveUser(String id) throws ErrorRespuestaHandler{
         
         if (id==null){
             throw new ErrorRespuestaHandler("Error en Metodo GET", HttpStatus.METHOD_NOT_ALLOWED.value());
@@ -92,11 +97,11 @@ public class UserService {
             return userUtil.UserMapping(user);
 
         }catch (Exception e){
-            throw new ErrorRespuestaHandler("Error al obtener usuario" + e.getMessage(), HttpStatus.BAD_REQUEST.value());
+            throw new ErrorRespuestaHandler("No se pudo encontrar al usuario con id: " + id, HttpStatus.NOT_FOUND.value());
         }
     }
     
-    public User UpdateUser(String id, User user) throws ErrorRespuestaHandler{
+    public UserRespuestaDTO UpdateUser(String id, UserDTO user) throws ErrorRespuestaHandler{
         
         UserDao userDao;
         List<PhoneDao> phonesDao;
@@ -105,8 +110,9 @@ public class UserService {
         {
             try{
                 userDao = uRepo.getReferenceById(id);
-                //phonesDao = userDao.getPhones();
-
+                
+                //phonesDao = pRepo.findAllByUser(userDao);
+                
                 phonesDao = userUtil.PhoneDaoMapping(userDao, user.getPhones());
                 // Actualiza los datos de User
                 userDao.setName(user.getName());
@@ -114,8 +120,7 @@ public class UserService {
                 userDao.setPassword(user.getPassword());
                 userDao.setPhones(phonesDao);
                 userDao.setModified(new Date(System.currentTimeMillis()));
-                userDao.setIsactive(user.getIsactive());
-
+                
                 pRepo.saveAll(phonesDao);
                 uRepo.save(userDao);
 

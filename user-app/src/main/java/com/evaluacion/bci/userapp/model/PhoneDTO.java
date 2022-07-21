@@ -1,17 +1,17 @@
 package com.evaluacion.bci.userapp.model;
 
-public class Phone {
+public class PhoneDTO {
 
     private Long id;
     private String number;
     private String citycode;
     private String countrycode;
 
-    protected Phone(){
+    protected PhoneDTO(){
 
     }
 
-    public Phone(Long id, String number, String citycode, String countrycode){
+    public PhoneDTO(Long id, String number, String citycode, String countrycode){
         super();
         this.id = id;
         this.number = number;

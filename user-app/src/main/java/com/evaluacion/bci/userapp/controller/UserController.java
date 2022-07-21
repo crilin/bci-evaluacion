@@ -1,5 +1,6 @@
 package com.evaluacion.bci.userapp.controller;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.evaluacion.bci.userapp.exception.ErrorRespuestaHandler;
-import com.evaluacion.bci.userapp.model.ErrorRespuesta;
-import com.evaluacion.bci.userapp.model.User;
+import com.evaluacion.bci.userapp.model.ErrorRespuestaDTO;
+import com.evaluacion.bci.userapp.model.UserDTO;
+import com.evaluacion.bci.userapp.model.UserRespuestaDTO;
 import com.evaluacion.bci.userapp.service.UserService;
 
 @RestController
@@ -25,51 +27,50 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/users")
-    public ResponseEntity<?> addUser(@RequestBody User newUser) throws ErrorRespuestaHandler{
+    public ResponseEntity<?> addUser(@RequestBody UserDTO newUser) throws ErrorRespuestaHandler{
 
         String token = "";
 
-        newUser = userService.addUser(newUser,token);
-
-        return ResponseEntity.ok(newUser);
+        UserRespuestaDTO user = userService.addUser(newUser,token);
+        
+                
+        return ResponseEntity.ok(user);
 
     }
 
     @GetMapping("/users/{id}")
     public ResponseEntity<?> RetrieveUser(@PathVariable String id) throws ErrorRespuestaHandler{
         
-        User user = userService.RetrieveUser(id);
+        UserRespuestaDTO user = userService.RetrieveUser(id);
 
         return ResponseEntity.ok(user);
 
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<?> UpdateUser(@PathVariable String id, @RequestBody User user) throws ErrorRespuestaHandler{
+    public ResponseEntity<?> UpdateUser(@PathVariable String id, @RequestBody UserDTO user) throws ErrorRespuestaHandler{
 
-        user = userService.UpdateUser(id, user);
-        return ResponseEntity.ok(user);
+        UserRespuestaDTO newUser = userService.UpdateUser(id, user);
+        return ResponseEntity.ok(newUser);
 
     }
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<?> DeleteUser(@PathVariable String id) throws ErrorRespuestaHandler{
-        ErrorRespuesta respuesta = new ErrorRespuesta();
         
         if (userService.DeleteUser(id)){
-            respuesta.setCodigo(HttpStatus.OK.value());
-            respuesta.setMensaje("Usuario eliminado");
-            
+            return ResponseEntity.ok(new ErrorRespuestaDTO(HttpStatus.OK.value(),"Usuario eliminado"));
+        }else {
+            return ResponseEntity.ok(new ErrorRespuestaDTO(HttpStatus.OK.value(),"Usuario no existe"));
         }
-        return ResponseEntity.ok(respuesta);
+        
     }
     
 
     @ExceptionHandler(ErrorRespuestaHandler.class)
-    public ResponseEntity<ErrorRespuesta> exceptionHandler(ErrorRespuestaHandler ex) {
-        ErrorRespuesta error = new ErrorRespuesta();
-        error.setCodigo(ex.getCodigo());
-        error.setMensaje(ex.getMensaje());
-        return new ResponseEntity<ErrorRespuesta>(error, HttpStatus.OK);
+    public ResponseEntity<ErrorRespuestaDTO> exceptionHandler(ErrorRespuestaHandler ex) {
+        ErrorRespuestaDTO error = new ErrorRespuestaDTO(ex.getCodigo(), ex.getMensaje());
+
+        return new ResponseEntity<ErrorRespuestaDTO>(error, HttpStatus.OK);
     }
 }

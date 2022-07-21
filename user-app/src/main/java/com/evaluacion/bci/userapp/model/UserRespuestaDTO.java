@@ -3,23 +3,23 @@ package com.evaluacion.bci.userapp.model;
 import java.util.Date;
 import java.util.List;
 
-public class User {
+public class UserRespuestaDTO {
     
     private String id;
     private String name;
     private String email;
     private String password;
-    private List<Phone> phones;
+    private List<PhoneDTO> phones;
     private Date created;
     private Date modified;
     private Date last_login;
     private boolean isactive;
     
-    protected User(){
+    protected UserRespuestaDTO(){
 
     }
 
-    public User(String id, String name, String email, String password, List<Phone> phones, Date created, Date modified, Date last_login, boolean isactive) {
+    public UserRespuestaDTO(String id, String name, String email, String password, List<PhoneDTO> phones, Date created, Date modified, Date last_login, boolean isactive) {
         
         super();
         this.id = id;
@@ -31,6 +31,11 @@ public class User {
         this.modified = modified;
         this.last_login = last_login;
         this.isactive = isactive;
+    }
+
+
+    public String getId() {
+        return this.id;
     }
 
     public String getName() {
@@ -57,21 +62,12 @@ public class User {
         this.password = password;
     }
 
-    public List<Phone> getPhones() {
+    public List<PhoneDTO> getPhones() {
         return this.phones;
     }
 
-    public void setPhones(List<Phone> phones) {
+    public void setPhones(List<PhoneDTO> phones) {
         this.phones = phones;
-    }
-    
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public Date getCreated() {
@@ -98,6 +94,10 @@ public class User {
         this.last_login = last_login;
     }
 
+    public boolean isIsactive() {
+        return this.isactive;
+    }
+
     public boolean getIsactive() {
         return this.isactive;
     }
@@ -106,26 +106,4 @@ public class User {
         this.isactive = isactive;
     }
 
-
-    @Override
-    public String toString() {
-        String msg = "{" +
-            " id='" + getId() + "'" +
-            ", name='" + getName() + "'" +
-            ", email='" + getEmail() + "'" +
-            ", password='" + getPassword() + "'" +
-            ", phones= ['";
-            for (Phone p: getPhones()){
-                msg = msg.concat(p.toString());
-                msg = msg + ",";
-            }
-            msg = msg.concat("']" +
-            ", created='" + getCreated() + "'" +
-            ", modified='" + getModified() + "'" +
-            ", last_login='" + getLast_login() + "'" +
-            ", isactive='" + getIsactive() + "'" +
-            "}");
-        return  msg;
-    }
-   
 }

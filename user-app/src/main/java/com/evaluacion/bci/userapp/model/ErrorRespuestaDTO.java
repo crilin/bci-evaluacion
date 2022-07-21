@@ -1,10 +1,18 @@
 package com.evaluacion.bci.userapp.model;
 
-public class ErrorRespuesta {
+public class ErrorRespuestaDTO {
     private int codigo;
     private String mensaje;
 
+    protected ErrorRespuestaDTO(){
 
+    }
+
+    public ErrorRespuestaDTO (int codigo, String mensaje){
+        super();
+        this.codigo = codigo;
+        this.mensaje = mensaje;
+    }
 
     public int getCodigo() {
         return this.codigo;
