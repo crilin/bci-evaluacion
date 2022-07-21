@@ -13,6 +13,9 @@ donde RUTA_CARPETA es la carpeta donde se descargo el proyecto.
 
 Una vez que la aplicación se este ejecutando, se accede desde la url http://localhost:8080/swagger-ui/index.html
 
+# Diagramas
+Se agrega Diagrama de Componentes y Modelo ER de la solución.
+
 # ACCESO A BD H2
 Para el acceso a la BD ingresar a la url: http://localhost:8080/h2-console/
  - User Name: sa
