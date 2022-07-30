@@ -3,10 +3,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'war'
-	id 'application'
 }
 
-mainClass = "com.evaluacion.bci.userapp.UserAppApplication"
 group = 'com.evaluacion.bci'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '8'
