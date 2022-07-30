@@ -6,7 +6,7 @@ para gestionar la creación, modificación, consulta y borrado de usuarios.
 Para levantar el Microservicio se abre el terminal de window y ejecutar el comando
 
 ```
-java -cp {RUTA_CARPETA}\user_app.jar com.evaluacion.bci.userapp.UserAppApplication
+java -cp {RUTA_CARPETA}\bci_evaluacion.jar com.evaluacion.bci.userapp.UserAppApplication
 ```
 
 donde RUTA_CARPETA es la carpeta donde se descargo el proyecto.
